@@ -26,9 +26,12 @@ var gulpCoffee = function(target) {
             .on('data', function(file) {
 
                 var coffeeAbs = path.normalize(__dirname + '/' + srcCoffeeDir + '/');
-                var relative = path.relative(coffeeAbs, file.path);
-                var from = path.normalize(srcCoffeeDir + '/' + relative);
-                var to = path.normalize(destDir + '/' + relative);
+
+                var relative_from = path.relative(coffeeAbs, file['original_file_path']);
+                var relative_to = path.relative(coffeeAbs, file.path);
+
+                var from = path.normalize(srcCoffeeDir + '/' + relative_from);
+                var to = path.normalize(destDir + '/' + relative_to);
 
                 gutil.log("Compiled '" + from + "' to '" + to + "'");
 
