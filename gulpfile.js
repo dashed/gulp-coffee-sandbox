@@ -19,9 +19,6 @@ var gulpCoffee = function(target) {
         .pipe(coffee({bare: true}))
             .on('error', gutil.log)
             .on('error', gutil.beep)
-            .on('data', function(file){
-                file['coffe_path'] = file.path;
-            })
         .pipe(gulp.dest(destDir))
             .on('data', function(file) {
 
