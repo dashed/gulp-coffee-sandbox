@@ -27,7 +27,7 @@ var cleaner = function(stream) {
         if(item.name == 'onerror') this.removeListener('error', item);
             // console.log('removed listener ('+ item.name +') for error');
     }, stream);
-}
+};
 
 
 var continueOnErrorPipe  = function() {
@@ -49,8 +49,8 @@ var continueOnErrorPipe  = function() {
 
 // decorator version
 var continueOnError = function(stream) {
-
     return stream
+    .on('error', function() {})
     .on('pipe', function(src) {
         cleaner(src);
     })
@@ -58,8 +58,7 @@ var continueOnError = function(stream) {
     .on('newListener', function() {
         cleaner(this);
     });
-
-}
+};
 
         gulp.src(target)
         .on('data', function(file){
