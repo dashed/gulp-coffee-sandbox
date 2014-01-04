@@ -26,18 +26,18 @@ _gulpCoffee.on('pipe', function(src) {
 
     // this.removeAllListeners('error');
 
-    console.log('removed all error listeners on pipe');
+    console.log('removed all onerror on pipe');
 });
 
 _gulpCoffee.on("newListener", function (ev, fn) {
 
     console.log('new listener ('+ fn.name +') for ' + ev);
 
-    if(fn.name == 'onerror') {
+    this.listeners('error').forEach(function(item) {
+        if(item.name == 'onerror') this.removeListener('error', item),
+            console.log('removed listener ('+ item.name +') for error');
+    }, this);
 
-        this.removeListener('error', fn);
-        console.log('removed listener ('+ fn.name +') for ' + ev);
-    }
     if(fn.name == 'dashed') {
         console.log('error listener count:' + EE.listenerCount(this, 'error'));
     }
@@ -60,6 +60,7 @@ _gulpCoffee.on("newListener", function (ev, fn) {
         src
         .on('data', function(file){
             file['original_file_path'] = file.path;
+            console.log(file.path);
         })
         .pipe(_gulpCoffee)
             // .on('error', gutil.log)
