@@ -2,6 +2,8 @@
 
 var EE = require('events').EventEmitter;
 
+var es = require('event-stream');
+
 
 var gulp = require('gulp');
 var gutil = require('gulp-util');
@@ -15,72 +17,72 @@ var destDir = './src/';
 // Emulate coffee -b -w -c -o ./src/ ./coffee
 var gulpCoffee = function(target) {
 
-var src = gulp.src(target);
 var _gulpCoffee = coffee({bare: true});
 
-// _gulpCoffee.on('pipe', function(src) {
-
-//     this.listeners('error').forEach(function(item) {
-//         if(item.name == 'onerror') this.removeListener('error', item);
-//     }, this);
-
-//     // this.removeAllListeners('error');
-
-//     console.log('removed all onerror on pipe');
-// });
-
-_gulpCoffee.on("newListener", function (ev, fn) {
-
-    console.log('new listener ('+ fn.name +') for ' + ev);
-
-    this.listeners('error').forEach(function(item) {
-        if(item.name == 'onerror') this.removeListener('error', item),
-            console.log('removed listener ('+ item.name +') for error');
-    }, this);
-
-    if(fn.name == 'dashed') {
-        console.log('error listener count:' + EE.listenerCount(this, 'error'));
-    }
-
-    return;
-
-});
-
-// One way to hook on error
-// _gulpCoffee.on('error', function dashed(err) {
-
-//     gutil.log(err);
-//     console.log('error listener count:' + EE.listenerCount(this, 'error'));
-
-//     // let's see current error listener
-//     console.log(this.listeners('error'));
-// });
 
 
-        src
+// clean stream of onerror
+var cleaner = function(stream) {
+    stream.listeners('error').forEach(function(item) {
+        if(item.name == 'onerror') this.removeListener('error', item);
+            // console.log('removed listener ('+ item.name +') for error');
+    }, stream);
+}
+
+
+var continueOnErrorPipe  = function() {
+
+    // backwards compatible passthrough??
+    return es.through(function(data) {
+        this.emit('data', data);
+    })
+    .on('error', gutil.log)
+    .on('pipe', function(src) {
+        cleaner(src);
+    })
+
+    .on('newListener', function() {
+        cleaner(this);
+    });
+
+}
+
+// decorator version
+var continueOnError = function(stream) {
+
+    return stream
+    .on('pipe', function(src) {
+        cleaner(src);
+    })
+
+    .on('newListener', function() {
+        cleaner(this);
+    });
+
+}
+
+        gulp.src(target)
         .on('data', function(file){
             file['original_file_path'] = file.path;
-            // console.log(file.path);
         })
-        .pipe(_gulpCoffee)
-            // .on('error', gutil.log)
+
+        .pipe(continueOnError(_gulpCoffee))
+
+            .on('error', gutil.log)
             // .on('error', gutil.beep)
 
             // Another way to hook on error
-            _gulpCoffee.on('error', function dashed(err) {
+            // _gulpCoffee.on('error', function dashed(err) {
 
-                gutil.log(err);
-                console.log('error listener count:' + EE.listenerCount(this, 'error'));
+            //     gutil.log(err);
+            //     console.log('error listener count:' + EE.listenerCount(this, 'error'));
 
-                // let's see current error listener
-                console.log(this.listeners('error'));
-            })
+            //     // let's see current error listener
+            //     console.log(this.listeners('error'));
+            // })
 
 
         .pipe(gulp.dest(destDir))
-            .on('error', function(err) {
-                console.log('bullshit')
-            })
             .on('data', function(file) {
 
 
