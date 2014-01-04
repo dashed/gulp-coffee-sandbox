@@ -18,16 +18,16 @@ var gulpCoffee = function(target) {
 var src = gulp.src(target);
 var _gulpCoffee = coffee({bare: true});
 
-_gulpCoffee.on('pipe', function(src) {
+// _gulpCoffee.on('pipe', function(src) {
 
-    this.listeners('error').forEach(function(item) {
-        if(item.name == 'onerror') this.removeListener('error', item);
-    }, this);
+//     this.listeners('error').forEach(function(item) {
+//         if(item.name == 'onerror') this.removeListener('error', item);
+//     }, this);
 
-    // this.removeAllListeners('error');
+//     // this.removeAllListeners('error');
 
-    console.log('removed all onerror on pipe');
-});
+//     console.log('removed all onerror on pipe');
+// });
 
 _gulpCoffee.on("newListener", function (ev, fn) {
 
@@ -60,7 +60,7 @@ _gulpCoffee.on("newListener", function (ev, fn) {
         src
         .on('data', function(file){
             file['original_file_path'] = file.path;
-            console.log(file.path);
+            // console.log(file.path);
         })
         .pipe(_gulpCoffee)
             // .on('error', gutil.log)
@@ -78,7 +78,12 @@ _gulpCoffee.on("newListener", function (ev, fn) {
 
 
         .pipe(gulp.dest(destDir))
+            .on('error', function(err) {
+                console.log('bullshit')
+            })
             .on('data', function(file) {
+
+
 
                 var coffeeAbs = path.normalize(__dirname + '/' + srcCoffeeDir + '/');
 
