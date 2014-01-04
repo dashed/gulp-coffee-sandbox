@@ -16,7 +16,10 @@ var gulpCoffee = function(target) {
         .on('data', function(file){
             file['original_file_path'] = file.path;
         })
-        .pipe(coffee({bare: true}))
+        .pipe(coffee({bare: true})
+            .on('pipe', function(source) {
+                 this.removeAllListeners('error');
+            }))
             .on('error', gutil.log)
             .on('error', gutil.beep)
         .pipe(gulp.dest(destDir))
